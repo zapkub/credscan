@@ -1,0 +1,12 @@
+FROM golang:1.18-alpine AS BUILDER
+WORKDIR /credscan
+COPY . /credscan/
+RUN apk add --no-cache gcc g++ git openssh-client && \
+    go build -o ./dist/server-linux-amd64 ./cmd/server/server.go
+
+FROM alpine
+WORKDIR /app
+ENV CREDSCAN_WORKDIR=/app/data
+COPY --from=BUILDER /credscan/dist/server-linux-amd64 /app/server
+
+ENTRYPOINT [ "/app/server" ]
